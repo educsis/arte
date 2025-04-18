@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Arte</title>
+  <!-- minify -->
+<link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+<!-- latest -->
+<link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+<!-- core style only -->
+<link href="https://unpkg.com/nes.css/css/nes-core.min.css" rel="stylesheet" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+    }
+    main.container {
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+      padding: 1rem;
+    }
+    img#artwork {
+      max-width: 100%;
+      height: auto;
+      max-height: 300px;
+      border-radius: 8px;
+      margin: 1rem 0;
+      object-fit: contain;
+    }
+    #options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #scoreboard {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1><span class="nes-text is-primary">Primary</span></h1>
+    <div id="game">
+      <div id="questionNumber">Pregunta 1 de 20</div>
+      <img id="artwork" src="" alt="Obra de arte" />
+      <div id="options" class="margin"></div>
+    </div>
+    <div id="scoreboard"></div>
+  </main>
+
+  <script>
+    const artworks = [
+      {
+        img: "monalisa.jpeg",
+        correct: "Leonardo Da Vinci",
+        wrong: ["Caravagio", "Miguel Angel"]
+      },
+      {
+        img: "noche.jpg",
+        correct: "Van Gogh",
+        wrong: ["Rafael", "Monet"]
+      },
+      {
+        img: "elgrito.jpg",
+        correct: "El Grito",
+        wrong: ["Persistencia de la memoria", "El Alien"]
+      },
+      {
+        img: "elbeso.jpg",
+        correct: "El Beso",
+        wrong: ["Nacimiento de Venus", "Guernica"]
+      },
+      {
+        img: "vangogh.jpeg",
+        correct: "Vincent Van Gogh",
+        wrong: ["Rembrant", "Rafael"]
+      },
+      {
+        img: "gotico.jpg",
+        correct: "Grant Wood",
+        wrong: ["Da Vinci", "Salvador Dalí"]
+      },
+      {
+        img: "venus.jpg",
+        correct: "El Nacimiento de Venus",
+        wrong: ["Las Conchas", "Adam y Eva"]
+      },
+      {
+        img: "libertad.jpg",
+        correct: "Eugène Delacroix",
+        wrong: ["Rafael", "Salvador Dalí"]
+      },
+      {
+        img: "cena.jpg",
+        correct: "Da Vinci",
+        wrong: ["Miguel Angel", "Boticelli"]
+      },
+      {
+        img: "memoria.jpg",
+        correct: "La Persistencia de la Memoria",
+        wrong: ["El Reloj", "El Tiempo"]
+      },
+      {
+        img: "arnolfini.jpg",
+        correct: "Arnolfini",
+        wrong: ["Rembrant", "Salvador Dalí"]
+      },
+      {
+        img: "perla.jpg",
+        correct: "Johannes Vermeer",
+        wrong: ["Salvador Dalí", "Monet"]
+      },
+      {
+        img: "night.jpg",
+        correct: "Rembrandt",
+        wrong: ["Van Gogh", "Rafael"]
+      },
+      {
+        img: "guernica.jpg",
+        correct: "Guernica",
+        wrong: ["Los Caballos", "La Gran Guerra"]
+      },
+      {
+        img: "gypsy.jpg",
+        correct: "Henri Rousseau",
+        wrong: ["Salvador Dalí", "Monet"]
+      },
+      {
+        img: "hopper.jpg",
+        correct: "Hopper",
+        wrong: ["Van Gogh", "Salvador Dalí"]
+      },
+      {
+        img: "primavera.jpg",
+        correct: "Primavera",
+        wrong: ["Impresión", "Las Meninas"]
+      },
+      {
+        img: "meninas.jpg",
+        correct: "Las Meninas",
+        wrong: ["Las Bailarinas", "La Gala"]
+      },
+      {
+        img: "rafael.jpg",
+        correct: "Rafael",
+        wrong: ["Da Vinci", "Miguel Angel"]
+      },
+      {
+        img: "flores.jpeg",
+        correct: "Van Gogh",
+        wrong: ["Monet", "Vermier"]
+      }
+    ];
+
+    let score = 0;
+    let current = 0;
+    let quizOrder = [];
+    const totalQuestions = 20;
+    const game = document.getElementById('game');
+    const artwork = document.getElementById('artwork');
+    const optionsDiv = document.getElementById('options');
+    const scoreboard = document.getElementById('scoreboard');
+    const questionNumber = document.getElementById('questionNumber');
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function preloadImages(list) {
+      list.forEach(item => {
+        const img = new Image();
+        img.src = item.img;
+      });
+    }
+
+    function startGame() {
+      quizOrder = [...artworks];
+      shuffle(quizOrder);
+      quizOrder = quizOrder.slice(0, totalQuestions);
+      preloadImages(quizOrder);
+      score = 0;
+      current = 0;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (current >= totalQuestions) {
+        game.style.display = 'none';
+        scoreboard.textContent = `✅ Juego terminado. Obtuviste ${score} de ${totalQuestions} puntos.`;
+        return;
+      }
+
+      const question = quizOrder[current];
+      artwork.src = question.img;
+      question.alt = `Obra ${current + 1}`;
+      questionNumber.textContent = `Pregunta ${current + 1} de ${totalQuestions}`;
+
+      const options = [question.correct, ...question.wrong];
+      shuffle(options);
+
+      optionsDiv.innerHTML = '';
+      options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.textContent = option;
+        btn.className = 'button nes-btn';
+        btn.onclick = () => {
+          if (option === question.correct) score++;
+          current++;
+          showQuestion();
+        };
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
